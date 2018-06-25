@@ -19,7 +19,6 @@ type Env struct {
 
 // SetupEnv sets up an environment based on the current config.
 func SetupEnv(config config) *Env {
-	log.Println(config.db)
 	return &Env{
 		sigChan:      make(chan os.Signal),
 		httpClient:   newHttpClient(config),

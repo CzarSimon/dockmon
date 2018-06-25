@@ -6,7 +6,7 @@ CREATE TABLE dockmon_liveness_target (
   fail_after INTEGER,
   is_healty BOOLEAN,
   number_of_restarts INTEGER,
-  consecutive_failed_health_checks INTEGER
+  consecutive_failed_health_checks INTEGER,
   last_restarted TIMESTAMP,
   last_health_success TIMESTAMP,
   last_health_failure TIMESTAMP,

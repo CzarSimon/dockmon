@@ -50,6 +50,10 @@ type ServiceRepository interface {
 	SaveService(serviceStatus ServiceStatus) error
 	GetServiceStatus(serviceName string) (ServiceStatus, error)
 	GetServiceStatuses() ([]ServiceStatus, error)
+
+	SaveHealthSuccess(serviceName string, timestamp time.Time) error
+	SaveHealthFailure(serviceName string, timestamp time.Time) error
+	SaveRestart(serviceName string, timestamp time.Time) error
 	Close() error
 }
 
@@ -106,7 +110,7 @@ const selectServiceStatusesQuery = `
     service_name, liveness_url, liveness_interval, should_restart, fail_after,
     is_healty, number_of_restarts, consecutive_failed_health_checks,
     last_restarted, last_health_success, last_health_failure, created_at
-  FROM dockmon_liveness_target`
+  FROM dockmon_liveness_target ORDER BY service_name`
 
 // GetServiceStatuses gets all service statuses from the database.
 func (repo *PgServiceRepo) GetServiceStatuses() ([]ServiceStatus, error) {
@@ -134,6 +138,56 @@ func createServiceStatusesFromRows(rows *sql.Rows) ([]ServiceStatus, error) {
 		statuses = append(statuses, s)
 	}
 	return statuses, nil
+}
+
+const setServiceSuccessQuery = `
+  UPDATE dockmon_liveness_target SET
+    last_health_success = $1, is_healty = TRUE, consecutive_failed_health_checks = 0
+    WHERE service_name = $2`
+
+// SaveHealthSuccess records a health check success for a given service.
+func (repo *PgServiceRepo) SaveHealthSuccess(serviceName string, timestamp time.Time) error {
+	stmt, err := repo.db.Prepare(setServiceSuccessQuery)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(timestamp, serviceName)
+	return err
+}
+
+const setServiceFailureQuery = `
+  UPDATE dockmon_liveness_target SET
+    last_health_failure = $1, is_healty = FALSE,
+    consecutive_failed_health_checks = consecutive_failed_health_checks + 1
+    WHERE service_name = $2`
+
+// SaveHealthFailure records a health check failure for a given service.
+func (repo *PgServiceRepo) SaveHealthFailure(serviceName string, timestamp time.Time) error {
+	stmt, err := repo.db.Prepare(setServiceFailureQuery)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(timestamp, serviceName)
+	return err
+}
+
+const saveServiceRestartQuery = `
+  UPDATE dockmon_liveness_target SET
+    last_restarted = $1, consecutive_failed_health_checks = 0,
+    number_of_restarts = number_of_restarts + 1
+    WHERE service_name = $2`
+
+// SaveRestart records a restart for a given service.
+func (repo *PgServiceRepo) SaveRestart(serviceName string, timestamp time.Time) error {
+	stmt, err := repo.db.Prepare(saveServiceRestartQuery)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(timestamp, serviceName)
+	return err
 }
 
 // Close closes the underlying database connection.

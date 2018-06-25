@@ -20,7 +20,6 @@ func (env *Env) runHealthChecks(waitGroup *sync.WaitGroup) {
 	for _, livenessTarget := range getLivenessTargets(env.serviceOptions) {
 		go env.runServiceHealthChecks(livenessTarget, waitGroup)
 	}
-	log.Println("Waiting")
 	time.Sleep(1 * time.Second)
 	waitGroup.Wait()
 }
@@ -37,6 +36,10 @@ func (env *Env) runServiceHealthChecks(livenessTarget LivenessTarget, waitGroup 
 			log.Println(err)
 			env.handleLivenessFailure(&livenessTarget)
 			continue
+		}
+		err = env.serviceRepo.SaveHealthSuccess(livenessTarget.serviceName, now())
+		if err != nil {
+			log.Println(err)
 		}
 		livenessTarget.ClearFailed()
 	}
@@ -59,12 +62,20 @@ func callLivenessTarget(livenessTarget *LivenessTarget, client *http.Client) err
 // restarts the underlying service if needed.
 func (env *Env) handleLivenessFailure(livenessTarget *LivenessTarget) {
 	livenessTarget.AddFailed()
+	err := env.serviceRepo.SaveHealthFailure(livenessTarget.serviceName, now())
+	if err != nil {
+		log.Println(err)
+	}
 	if !livenessTarget.ShouldRestart() {
 		return
 	}
-	err := restartService(livenessTarget.serviceName, env.dockerClient, &env.dockerTimeout)
+	err = restartService(livenessTarget.serviceName, env.dockerClient, &env.dockerTimeout)
 	if err != nil {
 		return
+	}
+	err = env.serviceRepo.SaveRestart(livenessTarget.serviceName, now())
+	if err != nil {
+		log.Println(err)
 	}
 	livenessTarget.ClearFailed()
 }
@@ -87,4 +98,9 @@ func getLivenessTargets(targetOptions []LivenessOptions) []LivenessTarget {
 		targets = append(targets, NewLivenessTarget(opts))
 	}
 	return targets
+}
+
+// now returns the current UTC timestamp.
+func now() time.Time {
+	return time.Now().UTC()
 }
