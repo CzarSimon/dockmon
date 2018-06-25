@@ -11,7 +11,8 @@ import (
 	docker "docker.io/go-docker"
 )
 
-var ErrServiceUnhealthy = errors.New("Service unhealty")
+// ErrServiceUnhealthy error inidicating that a service is unhealthy.
+var ErrServiceUnhealthy = errors.New("Service unhealthy")
 
 // runHealthChecks creates livenessTargets and starts perpetual
 // health check loops for each in different goroutines.
