@@ -1,0 +1,16 @@
+.app-heading {
+  text-align: center;
+  background-color: var(--color-main);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.08);
+  margin-bottom: var(--length-small);
+  position: fixed;
+  width: 100%;
+  top: 0;
+}
+
+.app-heading h1 {
+  color: var(--color-white);
+  padding: var(--length-mini);
+  margin: 0;
+  font-weight: bold;
+}

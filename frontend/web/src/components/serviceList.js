@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { getServiceStatuses } from '../api';
+import { api } from '../utils';
 import ServiceStatus from './serviceStatus';
 
 export default class ServiceList extends Component {
@@ -12,7 +12,12 @@ export default class ServiceList extends Component {
   }
 
   componentDidMount() {
-    getServiceStatuses('token')
+    this.fetchServiceState();
+    setInterval(this.fetchServiceState, 10 * 1000);
+  }
+
+  fetchServiceState = () => {
+    api.getServiceStatuses('token')
       .then(services => this.setState({ services: services }))
   }
 
@@ -24,7 +29,7 @@ export default class ServiceList extends Component {
       )
     }
     return (
-      <div>
+      <div className='service-list'>
         {services.map((service, i) => <ServiceStatus key={i} {...service} />)}
       </div>
     )

@@ -1,5 +1,32 @@
+@import '~antd/dist/antd.css';
+
+:root {
+  --color-main: #357AE8;
+  --color-white: #FFFFFF;
+  --color-grey: #ECEBEB;
+  --color-background: #F8F8F8;
+  --length-medium: 15px;
+  --length-small: 10px;
+  --length-mini: 5px;
+  --lenght-navbar: 50px;
+}
+
 body {
   margin: 0;
   padding: 0;
-  font-family: sans-serif;
+  font-family: 'Montserrat', sans-serif;
+  height: 100%;
+  background-color: #F8F8F8;
+}
+
+#root {
+  background-size: cover;
+  height: 100%;
+}
+
+.card {
+  box-shadow: 0 1px 1px rgba(0,0,0,0.08), 0 1px 1px rgba(0,0,0,0.08);
+  transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+  background-color: var(--color-white);
+  padding: var(--length-small);
 }

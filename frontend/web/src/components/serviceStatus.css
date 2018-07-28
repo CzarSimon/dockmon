@@ -1,0 +1,25 @@
+.service-status {
+  margin-bottom: var(--length-medium);
+  padding-left: var(--length-medium);
+  padding-right: var(--length-medium);
+}
+
+.service-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--length-small);
+  padding-bottom: var(--length-small);
+}
+
+.service-heading h3 {
+  margin-bottom: 0;
+}
+
+.service-info {
+  margin-top: var(--length-mini);
+  border-top-style: solid;
+  border-top-color: var(--color-grey);
+  border-top-width: thin;
+  padding-top: var(--length-medium);
+}
