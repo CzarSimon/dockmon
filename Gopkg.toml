@@ -34,10 +34,6 @@
   version = "2.2.1"
 
 [[constraint]]
-  name = "github.com/labstack/echo"
-  version = "3.3.5"
-
-[[constraint]]
   branch = "master"
   name = "github.com/CzarSimon/go-endpoint"
 
@@ -46,13 +42,5 @@
   version = "1.0.0"
 
 [[constraint]]
-  name = "github.com/gin-gonic/gin"
-  version = "1.2.0"
-
-[[constraint]]
   branch = "master"
   name = "github.com/lib/pq"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/gin-contrib/static"

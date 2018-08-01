@@ -1,0 +1,19 @@
+.form-component {
+  font-weight: 500;
+  font-size: 1.1em;
+  outline: none;
+}
+
+.form-input {
+  width: 100%;
+  margin-bottom: var(--length-medium);
+  border-style: none;
+}
+
+.form-button {
+  width: 100%;
+  margin-top: var(--length-small);
+  background-color: var(--color-main);
+  border-color: var(--color-main);
+  color: var(--color-white);
+}

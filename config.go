@@ -15,6 +15,8 @@ const configFilename = "serviceConf.yml"
 const (
 	SERVICE_PORT = "DOCKMON_PORT"
 	DB_NAME      = "DOCKMON_DB"
+	USERNAME_KEY = "DOCKMON_USERNAME"
+	PASSWORD_KEY = "DOCKMON_PASSWORD"
 	DefaultPort  = "7777"
 )
 
@@ -34,6 +36,8 @@ type config struct {
 	db             endpoint.SQLConfig
 	httpTimeout    time.Duration
 	dockerTimeout  time.Duration
+	username       string
+	password       string
 }
 
 // getConfig gets configuraton from both the environent and the serviceConf file.
@@ -48,6 +52,8 @@ func getConfig() config {
 		db:             endpoint.NewPGConfig(DB_NAME),
 		httpTimeout:    1 * time.Second,
 		dockerTimeout:  10 * time.Second,
+		username:       os.Getenv(USERNAME_KEY),
+		password:       os.Getenv(PASSWORD_KEY),
 	}
 }
 

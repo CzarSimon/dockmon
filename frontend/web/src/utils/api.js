@@ -1,25 +1,38 @@
-export const getServiceStatus = (token, serviceName) => (
-  getRequest(`/api/status?serviceName=${serviceName}`, token))
+export const getServiceStatus = (username, password, serviceName) => (
+  getRequest(`/api/status?serviceName=${serviceName}`, username, password));
 
-export const getServiceStatuses = token => (
-  getRequest(`/api/statuses`, token))
+export const getServiceStatuses = (username, password) => (
+  getRequest(`/api/statuses`, username, password));
 
-// getRequest creates and executes a get request
-const getRequest = (route, token) => (
-  fetch(route, makeRequestObject('GET', token))
-  .then(checkReponse)
-  .then(res => res.json())
+export const login = (username, password) => (
+  postRequest('/api/login', username, password));
+
+// getRequest creates and executes a GET request.
+const getRequest = (route, username, password) => (
+  fetch(route, makeRequestObject('GET', username, password))
+    .then(checkReponse)
+    .then(res => res.json())
+);
+
+// postRequest creates and executes a POST request.
+const postRequest = (route, username, password) => (
+  fetch(route, makeRequestObject('POST', username, password))
+    .then(checkReponse)
+    .then(res => res.json())
 );
 
 // makeRequestObject creates a request object with HTTP method and headers.
-const makeRequestObject = (method, token) => ({
-  method,
-  headers: {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-    'Authorization': `Basic ${token}`,
-  },
-})
+const makeRequestObject = (method, username, password) => {
+  const token = btoa(`${username}:${password}`);
+  return {
+    method,
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': `Basic ${token}`,
+    },
+  }
+}
 
 // checkReponse checks whether a fetch response was ok, throws an error if not
 const checkReponse = response => {
