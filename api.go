@@ -16,14 +16,12 @@ func (env *Env) startAPI() {
 
 // registerRoutes registers api routes.
 func registerRoutes(env *Env) *http.Server {
-	r := http.NewServeMux()
-	wrap := newWrapper(env.config.username, env.config.password)
-
-	r.Handle("/", http.FileServer(http.Dir("frontend/web/build")))
-	r.Handle("/health", wrap.new(http.MethodGet, handleHealthCheck))
-	r.Handle("/api/login", wrap.newWithAuth(http.MethodPost, handleHealthCheck))
-	r.Handle("/api/status", wrap.newWithAuth(http.MethodGet, env.getServiceStatus))
-	r.Handle("/api/statuses", wrap.newWithAuth(http.MethodGet, env.getServiceStatuses))
+	r := NewRouter(env.config.username, env.config.password)
+	r.ServeDir("/", "frontend/web/build")
+	r.GET("/health", handleHealthCheck, false)
+	r.POST("/api/login", handleHealthCheck, true)
+	r.GET("/api/status", env.getServiceStatus, true)
+	r.GET("/api/statuses", env.getServiceStatuses, true)
 
 	return &http.Server{
 		Addr:    ":" + env.port,

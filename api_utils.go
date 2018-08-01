@@ -21,47 +21,59 @@ func sendJSON(w http.ResponseWriter, v interface{}) (error, int) {
 	return nil, http.StatusOK
 }
 
-type wrapper struct {
+type Router struct {
+	mux      *http.ServeMux
 	username string
 	password string
 }
 
-func newWrapper(username, password string) wrapper {
-	return wrapper{
+func NewRouter(username, password string) *Router {
+	return &Router{
+		mux:      http.NewServeMux(),
 		username: username,
 		password: password,
 	}
 }
 
-type handlerFunc func(http.ResponseWriter, *http.Request) (error, int)
+func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	router.mux.ServeHTTP(w, r)
+}
 
-type handler struct {
+func (router *Router) GET(pattern string, h HandlerFunc, useAuth bool) {
+	handler := NewHandler(http.MethodGet, router.username, router.password, h, useAuth)
+	router.mux.Handle(pattern, handler)
+}
+
+func (router *Router) POST(pattern string, h HandlerFunc, useAuth bool) {
+	handler := NewHandler(http.MethodPost, router.username, router.password, h, useAuth)
+	router.mux.Handle(pattern, handler)
+}
+
+func (router *Router) ServeDir(pattern, directory string) {
+	router.mux.Handle("/", http.FileServer(http.Dir(directory)))
+}
+
+type HandlerFunc func(http.ResponseWriter, *http.Request) (error, int)
+
+type Handler struct {
 	allowedMethod string
-	handle        handlerFunc
+	handle        HandlerFunc
 	username      string
 	password      string
 	useAuth       bool
 }
 
-func (w wrapper) new(method string, h handlerFunc) handler {
-	return handler{
+func NewHandler(method, username, password string, h HandlerFunc, useAuth bool) Handler {
+	return Handler{
 		allowedMethod: method,
 		handle:        h,
-		useAuth:       false,
+		useAuth:       useAuth,
+		username:      username,
+		password:      password,
 	}
 }
 
-func (w wrapper) newWithAuth(method string, h handlerFunc) handler {
-	return handler{
-		allowedMethod: method,
-		handle:        h,
-		useAuth:       true,
-		username:      w.username,
-		password:      w.password,
-	}
-}
-
-func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != h.allowedMethod {
 		http.Error(w, fmt.Sprintf("Method %s not allowed\n", r.Method), http.StatusMethodNotAllowed)
 		return
@@ -97,7 +109,7 @@ func parseQuery(r *http.Request, key string) (string, error) {
 	return value, nil
 }
 
-func (h handler) authenticate(r *http.Request) error {
+func (h Handler) authenticate(r *http.Request) error {
 	if !h.useAuth {
 		return nil
 	}
