@@ -1,11 +1,16 @@
 package main
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 
 	docker "docker.io/go-docker"
+	"github.com/gobuffalo/packr"
+	migrate "github.com/rubenv/sql-migrate"
 )
 
 // Env holds reverence to environment variables and objects.
@@ -50,13 +55,52 @@ func newDockerClient() *docker.Client {
 func newServiceRepository(config config) ServiceRepository {
 	db, err := config.db.Connect()
 	failOnError(err)
-	serviceRepo := &PgServiceRepo{db: db}
+	err = migrateDB(config.dbDriver, db)
+	failOnError(err)
+
+	serviceRepo := getServiceRepository(config.dbDriver, db)
 
 	for _, serviceOption := range config.serviceOptions {
 		err := serviceRepo.SaveService(NewServiceStatus(serviceOption))
 		failOnError(err)
 	}
 	return serviceRepo
+}
+
+func getServiceRepository(dbDriver string, db *sql.DB) ServiceRepository {
+	switch dbDriver {
+	case "postgres":
+		return &PgServiceRepo{db: db}
+	case "sqlite3":
+		return &SqliteServiceRepo{db: db}
+	default:
+		log.Fatalf("No ServiceRepository matching driver: %s\n", dbDriver)
+		return nil
+	}
+}
+
+func migrateDB(dbDriver string, db *sql.DB) error {
+	fmt.Printf("DB Driver: %s\n", dbDriver)
+	migrationSource := &migrate.PackrMigrationSource{
+		Box: packr.NewBox("./resources/database"),
+		Dir: dbDriver,
+	}
+	migrate.SetTable("migrations")
+
+	migrations, err := migrationSource.FindMigrations()
+	if err != nil {
+		return err
+	}
+
+	if len(migrations) == 0 {
+		return errors.New("Missing database migrations")
+	}
+
+	_, err = migrate.Exec(db, dbDriver, migrationSource, migrate.Up)
+	if err != nil {
+		return fmt.Errorf("Error applying database migrations: %s", err)
+	}
+	return nil
 }
 
 func failOnError(err error) {

@@ -1,3 +1,4 @@
+-- +migrate Up
 CREATE TABLE dockmon_liveness_target (
   service_name VARCHAR(250) PRIMARY KEY,
   liveness_url VARCHAR(250),

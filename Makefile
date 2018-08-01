@@ -9,5 +9,11 @@ export DOCKMON_PASSWORD=password
 build:
 	go build
 
-run-dev: build
-	./dockmon --storage postgres
+run-pg: build
+	./dockmon -storage postgres
+
+run-sqlite: build
+	DOCKMON_DB_NAME=dockmon.db ./dockmon -storage sqlite3
+
+run-memory: build
+	./dockmon -storage memory

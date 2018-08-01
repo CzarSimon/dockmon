@@ -62,6 +62,12 @@
   version = "v0.3.3"
 
 [[projects]]
+  name = "github.com/gobuffalo/packr"
+  packages = ["."]
+  revision = "9e76dbe10b00dd1fa8f29cfa4fac72297beb32a4"
+  version = "v1.12.1"
+
+[[projects]]
   name = "github.com/gogo/protobuf"
   packages = ["proto"]
   revision = "100ba4e885062801d56799d78530b73b178a78f3"
@@ -75,6 +81,12 @@
     "oid"
   ]
   revision = "90697d60dd844d5ef6ff15135d0203f65d2f53b8"
+
+[[projects]]
+  name = "github.com/mattn/go-sqlite3"
+  packages = ["."]
+  revision = "25ecb14adfc7543176f7d85291ec7dba82c6f7e4"
+  version = "v1.9.0"
 
 [[projects]]
   name = "github.com/opencontainers/go-digest"
@@ -99,6 +111,15 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/rubenv/sql-migrate"
+  packages = [
+    ".",
+    "sqlparse"
+  ]
+  revision = "3f452fc0ebebbb784fdab91f7bc79a31dcacab5c"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -115,6 +136,12 @@
   revision = "ad87a3a340fa7f3bed189293fbfa7a9b7e021ae1"
 
 [[projects]]
+  name = "gopkg.in/gorp.v1"
+  packages = ["."]
+  revision = "c87af80f3cc5036b55b83d77171e156791085e2e"
+  version = "v1.7.1"
+
+[[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
@@ -123,6 +150,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "615749a1eeb727b98b972e84adcc92e763b83466be08605ac7c2892ce043a453"
+  inputs-digest = "85607f7ca6ffbc0e354e52d4449dce2eef3207ab4b5e2fc510eec2bb581ba244"
   solver-name = "gps-cdcl"
   solver-version = 1

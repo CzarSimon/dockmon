@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"io/ioutil"
 	"log"
 	"os"
@@ -13,11 +14,13 @@ import (
 const configFilename = "serviceConf.yml"
 
 const (
-	SERVICE_PORT = "DOCKMON_PORT"
-	DB_NAME      = "DOCKMON_DB"
-	USERNAME_KEY = "DOCKMON_USERNAME"
-	PASSWORD_KEY = "DOCKMON_PASSWORD"
-	DefaultPort  = "7777"
+	SERVICE_PORT       = "DOCKMON_PORT"
+	DB_NAME            = "DOCKMON_DB"
+	USERNAME_KEY       = "DOCKMON_USERNAME"
+	PASSWORD_KEY       = "DOCKMON_PASSWORD"
+	DefaultPort        = "7777"
+	STORAGE_FLAG       = "storage"
+	DefaultStorageType = "postgres"
 )
 
 // LivenessOptions configuration options for a LivenessTarget.
@@ -34,6 +37,7 @@ type config struct {
 	serviceOptions []LivenessOptions
 	port           string
 	db             endpoint.SQLConfig
+	dbDriver       string
 	httpTimeout    time.Duration
 	dockerTimeout  time.Duration
 	username       string
@@ -46,14 +50,36 @@ func getConfig() config {
 	if err != nil {
 		log.Fatal(err)
 	}
+	dbConfig := getDBConfig()
+
 	return config{
 		serviceOptions: serviceOptions,
 		port:           getServicePort(),
-		db:             endpoint.NewPGConfig(DB_NAME),
+		db:             dbConfig,
+		dbDriver:       dbConfig.ConnInfo().DriverName,
 		httpTimeout:    1 * time.Second,
 		dockerTimeout:  10 * time.Second,
 		username:       os.Getenv(USERNAME_KEY),
 		password:       os.Getenv(PASSWORD_KEY),
+	}
+}
+
+func getDBConfig() endpoint.SQLConfig {
+	var dbDriver string
+	flag.StringVar(&dbDriver, STORAGE_FLAG, DefaultStorageType, "Storage type to use")
+	flag.Parse()
+
+	switch dbDriver {
+	case "postgres":
+		return endpoint.NewPGConfig(DB_NAME)
+	case "mysql":
+		return endpoint.NewMySQLConfig(DB_NAME)
+	case "sqlite3":
+		return endpoint.NewSQLiteConfig(DB_NAME)
+	case "memory":
+		return endpoint.NewSQLiteConfig(":memory:")
+	default:
+		return endpoint.NewPGConfig(DB_NAME)
 	}
 }
 

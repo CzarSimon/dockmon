@@ -44,3 +44,15 @@
 [[constraint]]
   branch = "master"
   name = "github.com/lib/pq"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/rubenv/sql-migrate"
+
+[[constraint]]
+  name = "github.com/gobuffalo/packr"
+  version = "1.12.1"
+
+[[constraint]]
+  name = "github.com/mattn/go-sqlite3"
+  version = "1.9.0"

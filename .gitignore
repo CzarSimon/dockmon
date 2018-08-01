@@ -12,5 +12,6 @@
 *.out
 
 dockmon
+dockmon.db
 vendor/
 serviceConf.yml

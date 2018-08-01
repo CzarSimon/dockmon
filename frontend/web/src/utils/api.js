@@ -30,6 +30,7 @@ const makeRequestObject = (method, username, password) => {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
       'Authorization': `Basic ${token}`,
+      'User-Agent': 'Dockmon webapp',
     },
   }
 }
