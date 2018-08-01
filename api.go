@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
+
+	"github.com/CzarSimon/dockmon/pkg/httputil"
 )
 
 // startAPI start the monitoring agents rest api.
@@ -16,7 +18,7 @@ func (env *Env) startAPI() {
 
 // registerRoutes registers api routes.
 func registerRoutes(env *Env) *http.Server {
-	r := NewRouter(env.config.username, env.config.password)
+	r := httputil.NewRouter(env.config.username, env.config.password)
 	r.ServeDir("/", "frontend/web/build")
 	r.GET("/health", handleHealthCheck, false)
 	r.POST("/api/login", handleHealthCheck, true)
@@ -31,7 +33,7 @@ func registerRoutes(env *Env) *http.Server {
 
 // getServiceStatus gets the health status of specified monitored service.
 func (env *Env) getServiceStatus(w http.ResponseWriter, r *http.Request) (error, int) {
-	serviceName, err := parseQuery(r, "serviceName")
+	serviceName, err := httputil.ParseQuery(r, "serviceName")
 	if err != nil {
 		return err, http.StatusBadRequest
 	}
@@ -40,7 +42,7 @@ func (env *Env) getServiceStatus(w http.ResponseWriter, r *http.Request) (error,
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
-	return sendJSON(w, serviceStatus)
+	return httputil.SendJSON(w, serviceStatus)
 }
 
 // getServiceStatuses gets the health status of all monitored services.
@@ -49,10 +51,10 @@ func (env *Env) getServiceStatuses(w http.ResponseWriter, r *http.Request) (erro
 	if err != nil {
 		return err, http.StatusInternalServerError
 	}
-	return sendJSON(w, serviceStatuses)
+	return httputil.SendJSON(w, serviceStatuses)
 }
 
 // handleHealthCheck returns a 200 OK on being invoked.
 func handleHealthCheck(w http.ResponseWriter, r *http.Request) (error, int) {
-	return sendJSON(w, map[string]string{"status": "OK"})
+	return httputil.SendJSON(w, map[string]string{"status": "OK"})
 }

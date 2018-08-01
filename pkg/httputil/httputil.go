@@ -1,4 +1,4 @@
-package main
+package httputil
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 )
 
 // sendJSON Marshals a json body and sends as response.
-func sendJSON(w http.ResponseWriter, v interface{}) (error, int) {
+func SendJSON(w http.ResponseWriter, v interface{}) (error, int) {
 	js, err := json.Marshal(v)
 	if err != nil {
 		return err, http.StatusInternalServerError
@@ -21,12 +21,16 @@ func sendJSON(w http.ResponseWriter, v interface{}) (error, int) {
 	return nil, http.StatusOK
 }
 
+// Router wrapper around a http.ServeMux to provide
+// authentication for specific routes, mathing a routes to http methods
+// and wrapping HandlerFuncs with error handling an logging.
 type Router struct {
 	mux      *http.ServeMux
 	username string
 	password string
 }
 
+// NewRouter creats a new Router with the given authentication credentials.
 func NewRouter(username, password string) *Router {
 	return &Router{
 		mux:      http.NewServeMux(),
@@ -35,26 +39,35 @@ func NewRouter(username, password string) *Router {
 	}
 }
 
+// ServeHTTP passes each request to the underlying ServeMux.
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	router.mux.ServeHTTP(w, r)
 }
 
+// GET wraps a HandlerFunc into a handler with optional authentication and
+// registers it agains a GET method and pattern.
 func (router *Router) GET(pattern string, h HandlerFunc, useAuth bool) {
 	handler := NewHandler(http.MethodGet, router.username, router.password, h, useAuth)
 	router.mux.Handle(pattern, handler)
 }
 
+// POST wraps a HandlerFunc into a handler with optional authentication and
+// registers it agains a POST method and pattern.
 func (router *Router) POST(pattern string, h HandlerFunc, useAuth bool) {
 	handler := NewHandler(http.MethodPost, router.username, router.password, h, useAuth)
 	router.mux.Handle(pattern, handler)
 }
 
+// ServeDir registers serviing of static files from a given directory.
 func (router *Router) ServeDir(pattern, directory string) {
-	router.mux.Handle("/", http.FileServer(http.Dir(directory)))
+	router.mux.Handle(pattern, http.FileServer(http.Dir(directory)))
 }
 
+// HandlerFunc signature of a request handler.
 type HandlerFunc func(http.ResponseWriter, *http.Request) (error, int)
 
+// Handler wrapper around a HandlerFunc to provide
+// authentication, method checking, logging and error handling.
 type Handler struct {
 	allowedMethod string
 	handle        HandlerFunc
@@ -63,6 +76,7 @@ type Handler struct {
 	useAuth       bool
 }
 
+// NewHandler creates and returns a new Handler.
 func NewHandler(method, username, password string, h HandlerFunc, useAuth bool) Handler {
 	return Handler{
 		allowedMethod: method,
@@ -73,13 +87,14 @@ func NewHandler(method, username, password string, h HandlerFunc, useAuth bool) 
 	}
 }
 
+// ServeHTTP wrapps the call to the handlers HandlerFunc.
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != h.allowedMethod {
 		http.Error(w, fmt.Sprintf("Method %s not allowed\n", r.Method), http.StatusMethodNotAllowed)
 		return
 	}
 
-	err := h.authenticate(r)
+	err := h.Authenticate(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
@@ -87,7 +102,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	startTime := time.Now()
 	err, status := h.handle(w, r)
-	logRequest(r, status, startTime)
+	LogRequest(r, status, startTime)
 
 	if err != nil {
 		log.Printf("%d ERROR: %s\n", status, err)
@@ -95,13 +110,15 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func logRequest(r *http.Request, status int, startTime time.Time) {
+// LogRequest logs: status, called route, method and completion time of a request.
+func LogRequest(r *http.Request, status int, startTime time.Time) {
 	var MilliPerNano int64 = 1000000
 	requestTimeMS := time.Since(startTime).Nanoseconds() / MilliPerNano
 	log.Printf("| %d | %s - %s | %d ms\n", status, r.Method, r.RequestURI, requestTimeMS)
 }
 
-func parseQuery(r *http.Request, key string) (string, error) {
+// ParseQuery attempts to extract a query from
+func ParseQuery(r *http.Request, key string) (string, error) {
 	value := r.URL.Query().Get(key)
 	if value == "" {
 		return value, fmt.Errorf("No value found for key: %s", key)
@@ -109,7 +126,8 @@ func parseQuery(r *http.Request, key string) (string, error) {
 	return value, nil
 }
 
-func (h Handler) authenticate(r *http.Request) error {
+// Authenticate checks the request credentials if the handler is set to do so.
+func (h Handler) Authenticate(r *http.Request) error {
 	if !h.useAuth {
 		return nil
 	}
