@@ -9,6 +9,8 @@ import (
 	"os"
 
 	docker "docker.io/go-docker"
+	"github.com/CzarSimon/dockmon/pkg/datastore"
+	"github.com/CzarSimon/dockmon/pkg/schema"
 	"github.com/gobuffalo/packr"
 	migrate "github.com/rubenv/sql-migrate"
 )
@@ -18,7 +20,7 @@ type Env struct {
 	sigChan      chan os.Signal
 	httpClient   *http.Client
 	dockerClient *docker.Client
-	serviceRepo  ServiceRepository
+	serviceRepo  datastore.ServiceRepository
 	config
 }
 
@@ -52,31 +54,19 @@ func newDockerClient() *docker.Client {
 	return client
 }
 
-func newServiceRepository(config config) ServiceRepository {
+func newServiceRepository(config config) datastore.ServiceRepository {
 	db, err := config.db.Connect()
 	failOnError(err)
 	err = migrateDB(config.dbDriver, db)
 	failOnError(err)
 
-	serviceRepo := getServiceRepository(config.dbDriver, db)
+	serviceRepo := datastore.GetServiceRepository(config.dbDriver, db)
 
 	for _, serviceOption := range config.serviceOptions {
-		err := serviceRepo.SaveService(NewServiceStatus(serviceOption))
+		err := serviceRepo.SaveService(schema.NewServiceStatus(serviceOption))
 		failOnError(err)
 	}
 	return serviceRepo
-}
-
-func getServiceRepository(dbDriver string, db *sql.DB) ServiceRepository {
-	switch dbDriver {
-	case "postgres":
-		return &PgServiceRepo{db: db}
-	case "sqlite3":
-		return &SqliteServiceRepo{db: db}
-	default:
-		log.Fatalf("No ServiceRepository matching driver: %s\n", dbDriver)
-		return nil
-	}
 }
 
 func migrateDB(dbDriver string, db *sql.DB) error {

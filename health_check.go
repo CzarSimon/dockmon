@@ -9,6 +9,7 @@ import (
 	"time"
 
 	docker "docker.io/go-docker"
+	"github.com/CzarSimon/dockmon/pkg/schema"
 )
 
 // ErrServiceUnhealthy error inidicating that a service is unhealthy.
@@ -25,7 +26,7 @@ func (env *Env) runHealthChecks(waitGroup *sync.WaitGroup) {
 }
 
 // runServiceHealthChecks runs a perpetual health check loop for a given LivenessTarget.
-func (env *Env) runServiceHealthChecks(livenessTarget LivenessTarget, waitGroup *sync.WaitGroup) {
+func (env *Env) runServiceHealthChecks(livenessTarget schema.LivenessTarget, waitGroup *sync.WaitGroup) {
 	waitGroup.Add(1)
 	defer waitGroup.Done()
 
@@ -37,7 +38,7 @@ func (env *Env) runServiceHealthChecks(livenessTarget LivenessTarget, waitGroup 
 			env.handleLivenessFailure(&livenessTarget)
 			continue
 		}
-		err = env.serviceRepo.SaveHealthSuccess(livenessTarget.serviceName, now())
+		err = env.serviceRepo.SaveHealthSuccess(livenessTarget.ServiceName, now())
 		if err != nil {
 			log.Println(err)
 		}
@@ -46,8 +47,8 @@ func (env *Env) runServiceHealthChecks(livenessTarget LivenessTarget, waitGroup 
 }
 
 // callLivenessTarget performes a health check on a livenessTarget.
-func callLivenessTarget(livenessTarget *LivenessTarget, client *http.Client) error {
-	resp, err := client.Get(livenessTarget.livenessURL)
+func callLivenessTarget(livenessTarget *schema.LivenessTarget, client *http.Client) error {
+	resp, err := client.Get(livenessTarget.LivenessURL)
 	if err != nil {
 		return err
 	}
@@ -60,20 +61,20 @@ func callLivenessTarget(livenessTarget *LivenessTarget, client *http.Client) err
 
 // handleLivenessFailure updates the livenessTarget state and
 // restarts the underlying service if needed.
-func (env *Env) handleLivenessFailure(livenessTarget *LivenessTarget) {
+func (env *Env) handleLivenessFailure(livenessTarget *schema.LivenessTarget) {
 	livenessTarget.AddFailed()
-	err := env.serviceRepo.SaveHealthFailure(livenessTarget.serviceName, now())
+	err := env.serviceRepo.SaveHealthFailure(livenessTarget.ServiceName, now())
 	if err != nil {
 		log.Println(err)
 	}
 	if !livenessTarget.ShouldRestart() {
 		return
 	}
-	err = restartService(livenessTarget.serviceName, env.dockerClient, &env.dockerTimeout)
+	err = restartService(livenessTarget.ServiceName, env.dockerClient, &env.dockerTimeout)
 	if err != nil {
 		return
 	}
-	err = env.serviceRepo.SaveRestart(livenessTarget.serviceName, now())
+	err = env.serviceRepo.SaveRestart(livenessTarget.ServiceName, now())
 	if err != nil {
 		log.Println(err)
 	}
@@ -92,10 +93,10 @@ func restartService(serviceName string, dockerClient *docker.Client, restartTime
 }
 
 // getLivenessTargets maps a list of LivenessOptions to a list of LivenessTargets
-func getLivenessTargets(targetOptions []LivenessOptions) []LivenessTarget {
-	targets := make([]LivenessTarget, 0, len(targetOptions))
+func getLivenessTargets(targetOptions []schema.LivenessOptions) []schema.LivenessTarget {
+	targets := make([]schema.LivenessTarget, 0, len(targetOptions))
 	for _, opts := range targetOptions {
-		targets = append(targets, NewLivenessTarget(opts))
+		targets = append(targets, schema.NewLivenessTarget(opts))
 	}
 	return targets
 }

@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/CzarSimon/dockmon/pkg/schema"
 	endpoint "github.com/CzarSimon/go-endpoint"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -23,18 +24,9 @@ const (
 	DefaultStorageType = "postgres"
 )
 
-// LivenessOptions configuration options for a LivenessTarget.
-type LivenessOptions struct {
-	ServiceName      string `yaml:"serviceName" json:"serviceName"`
-	LivenessURL      string `yaml:"livenessUrl" json:"livenessUrl"`
-	LivenessInterval int    `yaml:"livenessInterval" json:"livenessInterval"`
-	Restart          bool   `yaml:"restart" json:"restart"`
-	FailAfter        uint8  `yaml:"failAfter" json:"failAfter"`
-}
-
 // config holds configuration options.
 type config struct {
-	serviceOptions []LivenessOptions
+	serviceOptions []schema.LivenessOptions
 	port           string
 	db             endpoint.SQLConfig
 	dbDriver       string
@@ -93,12 +85,12 @@ func getServicePort() string {
 }
 
 // readServiceOptions reads service options in the provided serviceConf.yml file.
-func readServiceOptions(filename string) ([]LivenessOptions, error) {
+func readServiceOptions(filename string) ([]schema.LivenessOptions, error) {
 	rawData, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
-	var serviceOptions []LivenessOptions
+	var serviceOptions []schema.LivenessOptions
 	err = yaml.Unmarshal(rawData, &serviceOptions)
 	return serviceOptions, err
 }

@@ -1,9 +1,10 @@
-package main
+package datastore
 
 import (
 	"database/sql"
 	"time"
 
+	"github.com/CzarSimon/dockmon/pkg/schema"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -20,7 +21,7 @@ const sqliteInsertServiceStatusQuery = `
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) ON CONFLICT DO NOTHING`
 
 // SaveService inserts a new ServiceStatus into the database.
-func (repo *SqliteServiceRepo) SaveService(serviceStatus ServiceStatus) error {
+func (repo *SqliteServiceRepo) SaveService(serviceStatus schema.ServiceStatus) error {
 	stmt, err := repo.db.Prepare(sqliteInsertServiceStatusQuery)
 	if err != nil {
 		return err
@@ -43,8 +44,8 @@ const sqliteSelectServiceStatusQuery = `
   FROM dockmon_liveness_target WHERE service_name = $1`
 
 // GetServiceStatus gets a specified service status from the database.
-func (repo *SqliteServiceRepo) GetServiceStatus(serviceName string) (ServiceStatus, error) {
-	var s ServiceStatus
+func (repo *SqliteServiceRepo) GetServiceStatus(serviceName string) (schema.ServiceStatus, error) {
+	var s schema.ServiceStatus
 	err := repo.db.QueryRow(sqliteSelectServiceStatusQuery, serviceName).Scan(
 		&s.ServiceName, &s.LivenessURL, &s.LivenessInterval, &s.ShouldRestart,
 		&s.FailAfter, &s.IsHealty, &s.Restarts, &s.ConsecutiveFailedHealthChecks,
@@ -63,7 +64,7 @@ const sqliteSelectServiceStatusesQuery = `
   FROM dockmon_liveness_target ORDER BY service_name`
 
 // GetServiceStatuses gets all service statuses from the database.
-func (repo *SqliteServiceRepo) GetServiceStatuses() ([]ServiceStatus, error) {
+func (repo *SqliteServiceRepo) GetServiceStatuses() ([]schema.ServiceStatus, error) {
 	rows, err := repo.db.Query(sqliteSelectServiceStatusesQuery)
 	if err != nil {
 		return nil, err

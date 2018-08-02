@@ -1,15 +1,8 @@
-package main
+package schema
 
-import (
-	"time"
+import "time"
 
-	_ "github.com/lib/pq"
-)
-
-var (
-	emptyServiceStatus ServiceStatus = ServiceStatus{}
-	beginingOfTime                   = time.Time{}.UTC()
-)
+var beginingOfTime = time.Time{}.UTC()
 
 // ServiceStatus contains metadata about a service and its health status and history.
 type ServiceStatus struct {
@@ -42,16 +35,4 @@ func NewServiceStatus(opts LivenessOptions) ServiceStatus {
 		LastHealthFailure:             beginingOfTime,
 		CreatedAt:                     time.Now().UTC(),
 	}
-}
-
-// ServiceRepository interface to persist, update and retrieve service statuses.
-type ServiceRepository interface {
-	SaveService(serviceStatus ServiceStatus) error
-	GetServiceStatus(serviceName string) (ServiceStatus, error)
-	GetServiceStatuses() ([]ServiceStatus, error)
-
-	SaveHealthSuccess(serviceName string, timestamp time.Time) error
-	SaveHealthFailure(serviceName string, timestamp time.Time) error
-	SaveRestart(serviceName string, timestamp time.Time) error
-	Close() error
 }

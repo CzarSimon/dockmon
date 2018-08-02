@@ -1,9 +1,10 @@
-package main
+package datastore
 
 import (
 	"database/sql"
 	"time"
 
+	"github.com/CzarSimon/dockmon/pkg/schema"
 	_ "github.com/lib/pq"
 )
 
@@ -20,7 +21,7 @@ const pgInsertServiceStatusQuery = `
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) ON CONFLICT DO NOTHING`
 
 // SaveService inserts a new ServiceStatus into the database.
-func (repo *PgServiceRepo) SaveService(serviceStatus ServiceStatus) error {
+func (repo *PgServiceRepo) SaveService(serviceStatus schema.ServiceStatus) error {
 	stmt, err := repo.db.Prepare(pgInsertServiceStatusQuery)
 	if err != nil {
 		return err
@@ -43,8 +44,8 @@ const pgSelectServiceStatusQuery = `
   FROM dockmon_liveness_target WHERE service_name = $1`
 
 // GetServiceStatus gets a specified service status from the database.
-func (repo *PgServiceRepo) GetServiceStatus(serviceName string) (ServiceStatus, error) {
-	var s ServiceStatus
+func (repo *PgServiceRepo) GetServiceStatus(serviceName string) (schema.ServiceStatus, error) {
+	var s schema.ServiceStatus
 	err := repo.db.QueryRow(pgSelectServiceStatusQuery, serviceName).Scan(
 		&s.ServiceName, &s.LivenessURL, &s.LivenessInterval, &s.ShouldRestart,
 		&s.FailAfter, &s.IsHealty, &s.Restarts, &s.ConsecutiveFailedHealthChecks,
@@ -63,7 +64,7 @@ const pgSelectServiceStatusesQuery = `
   FROM dockmon_liveness_target ORDER BY service_name`
 
 // GetServiceStatuses gets all service statuses from the database.
-func (repo *PgServiceRepo) GetServiceStatuses() ([]ServiceStatus, error) {
+func (repo *PgServiceRepo) GetServiceStatuses() ([]schema.ServiceStatus, error) {
 	rows, err := repo.db.Query(pgSelectServiceStatusesQuery)
 	if err != nil {
 		return nil, err
@@ -74,9 +75,9 @@ func (repo *PgServiceRepo) GetServiceStatuses() ([]ServiceStatus, error) {
 
 // createServiceStatusesFromRows turns a resulting list of rows into
 // a list of service statuses.
-func createServiceStatusesFromRows(rows *sql.Rows) ([]ServiceStatus, error) {
-	statuses := make([]ServiceStatus, 0)
-	var s ServiceStatus
+func createServiceStatusesFromRows(rows *sql.Rows) ([]schema.ServiceStatus, error) {
+	statuses := make([]schema.ServiceStatus, 0)
+	var s schema.ServiceStatus
 	for rows.Next() {
 		err := rows.Scan(
 			&s.ServiceName, &s.LivenessURL, &s.LivenessInterval, &s.ShouldRestart,
