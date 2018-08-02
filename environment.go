@@ -1,9 +1,6 @@
 package main
 
 import (
-	"database/sql"
-	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -11,8 +8,6 @@ import (
 	docker "docker.io/go-docker"
 	"github.com/CzarSimon/dockmon/pkg/datastore"
 	"github.com/CzarSimon/dockmon/pkg/schema"
-	"github.com/gobuffalo/packr"
-	migrate "github.com/rubenv/sql-migrate"
 )
 
 // Env holds reverence to environment variables and objects.
@@ -57,7 +52,7 @@ func newDockerClient() *docker.Client {
 func newServiceRepository(config config) datastore.ServiceRepository {
 	db, err := config.db.Connect()
 	failOnError(err)
-	err = migrateDB(config.dbDriver, db)
+	err = datastore.MigrateDB(config.dbDriver, db)
 	failOnError(err)
 
 	serviceRepo := datastore.GetServiceRepository(config.dbDriver, db)
@@ -67,30 +62,6 @@ func newServiceRepository(config config) datastore.ServiceRepository {
 		failOnError(err)
 	}
 	return serviceRepo
-}
-
-func migrateDB(dbDriver string, db *sql.DB) error {
-	fmt.Printf("DB Driver: %s\n", dbDriver)
-	migrationSource := &migrate.PackrMigrationSource{
-		Box: packr.NewBox("./resources/database"),
-		Dir: dbDriver,
-	}
-	migrate.SetTable("migrations")
-
-	migrations, err := migrationSource.FindMigrations()
-	if err != nil {
-		return err
-	}
-
-	if len(migrations) == 0 {
-		return errors.New("Missing database migrations")
-	}
-
-	_, err = migrate.Exec(db, dbDriver, migrationSource, migrate.Up)
-	if err != nil {
-		return fmt.Errorf("Error applying database migrations: %s", err)
-	}
-	return nil
 }
 
 func failOnError(err error) {
