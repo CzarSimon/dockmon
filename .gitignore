@@ -11,7 +11,8 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-dockmon
+cmd/cli/dockmon/dockmon
+cmd/service/dockmon/dockmon
 dockmon.db
 vendor/
 serviceConf.yml
