@@ -73,24 +73,6 @@ func (repo *MySQLServiceRepo) GetServiceStatuses() ([]schema.ServiceStatus, erro
 	return createServiceStatusesFromRows(rows)
 }
 
-// createServiceStatusesFromRows turns a resulting list of rows into
-// a list of service statuses.
-func createServiceStatusesFromRows(rows *sql.Rows) ([]schema.ServiceStatus, error) {
-	statuses := make([]schema.ServiceStatus, 0)
-	var s schema.ServiceStatus
-	for rows.Next() {
-		err := rows.Scan(
-			&s.ServiceName, &s.LivenessURL, &s.LivenessInterval, &s.ShouldRestart,
-			&s.FailAfter, &s.IsHealty, &s.Restarts, &s.ConsecutiveFailedHealthChecks,
-			&s.LastRestarted, &s.LastHealthSuccess, &s.LastHealthFailure, &s.CreatedAt)
-		if err != nil {
-			return nil, err
-		}
-		statuses = append(statuses, s)
-	}
-	return statuses, nil
-}
-
 const mysqlSetServiceSuccessQuery = `
   UPDATE dockmon_liveness_target SET
     last_health_success = ?, is_healty = TRUE, consecutive_failed_health_checks = 0
