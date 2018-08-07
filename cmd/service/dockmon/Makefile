@@ -12,6 +12,9 @@ build:
 run-pg: build
 	./dockmon -storage postgres
 
+run-mysql: build
+	DOCKMON_DB_PORT=3306 ./dockmon -storage mysql
+
 run-sqlite: build
 	DOCKMON_DB_NAME=dockmon.db ./dockmon -storage sqlite3
 

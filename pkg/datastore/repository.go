@@ -27,6 +27,8 @@ func GetServiceRepository(dbDriver string, db *sql.DB) ServiceRepository {
 	switch dbDriver {
 	case "postgres":
 		return &PgServiceRepo{db: db}
+	case "mysql":
+		return &MySQLServiceRepo{db: db}
 	case "sqlite3":
 		return &SqliteServiceRepo{db: db}
 	default:
