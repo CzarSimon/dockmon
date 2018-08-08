@@ -33,7 +33,7 @@
     "pkg/httputil",
     "pkg/schema"
   ]
-  revision = "dd9a37ea7498edc43f7b493c8237110a5650d122"
+  revision = "5fddeb693b0944606444cf68a51891bdff4a5f41"
 
 [[projects]]
   branch = "master"
@@ -143,7 +143,7 @@
     "internal/socks",
     "proxy"
   ]
-  revision = "19491d39cadbd9cd33f26ca22cc89ba4ba38251c"
+  revision = "f9ce57c11b242f0f1599cf25c89d8cb02c45295a"
 
 [[projects]]
   branch = "master"
