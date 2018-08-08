@@ -33,13 +33,13 @@
     "pkg/httputil",
     "pkg/schema"
   ]
-  revision = "6c2d4a9d598fc0be5bd0f10f2dd5889514eca115"
+  revision = "dd9a37ea7498edc43f7b493c8237110a5650d122"
 
 [[projects]]
   branch = "master"
   name = "github.com/CzarSimon/go-endpoint"
   packages = ["."]
-  revision = "939345fbb770b83b60d1ab571cdfdb3a2711b942"
+  revision = "d02e59bc4ca5d296ae29ac859457822873243d92"
 
 [[projects]]
   name = "github.com/Microsoft/go-winio"

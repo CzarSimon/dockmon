@@ -1,12 +1,13 @@
+-- +migrate Up
 CREATE TABLE dockmon_liveness_target (
-  service_name VARCHAR(250) PRIMARY KEY,
+  service_name VARCHAR(150) PRIMARY KEY,
   liveness_url VARCHAR(250),
-  liveness_interval INTEGER,
+  liveness_interval INT,
   should_restart BOOLEAN,
-  fail_after INTEGER,
+  fail_after INT,
   is_healty BOOLEAN,
-  number_of_restarts INTEGER,
-  consecutive_failed_health_checks INTEGER,
+  number_of_restarts INT,
+  consecutive_failed_health_checks INT,
   last_restarted TIMESTAMP,
   last_health_success TIMESTAMP,
   last_health_failure TIMESTAMP,

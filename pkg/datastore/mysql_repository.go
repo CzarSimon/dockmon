@@ -18,7 +18,7 @@ const mysqlInsertServiceStatusQuery = `
     service_name, liveness_url, liveness_interval, should_restart, fail_after,
     is_healty, number_of_restarts, consecutive_failed_health_checks,
     last_restarted, last_health_success, last_health_failure, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING`
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY IGNORE`
 
 // SaveService inserts a new ServiceStatus into the database.
 func (repo *MySQLServiceRepo) SaveService(serviceStatus schema.ServiceStatus) error {
