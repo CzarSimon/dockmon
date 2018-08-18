@@ -20,3 +20,6 @@ run-sqlite: build
 
 run-memory: build
 	./dockmon -storage memory
+
+clean:
+	rm Gopkg.lock; dep ensure

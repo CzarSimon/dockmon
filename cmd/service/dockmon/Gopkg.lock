@@ -33,7 +33,7 @@
     "pkg/httputil",
     "pkg/schema"
   ]
-  revision = "5fddeb693b0944606444cf68a51891bdff4a5f41"
+  revision = "9812caf69c36757a3e4703c48eacf5b2d072267a"
 
 [[projects]]
   branch = "master"
