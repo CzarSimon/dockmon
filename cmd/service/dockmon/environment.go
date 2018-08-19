@@ -74,7 +74,7 @@ func migrateDB(dbDriver string, db *sql.DB) error {
 		Box: packr.NewBox("./resources/migrations"),
 		Dir: dbDriver,
 	}
-	migrate.SetTable("migrations")
+	migrate.SetTable("dockmon_migrations")
 
 	migrations, err := migrationSource.FindMigrations()
 	if err != nil {
