@@ -1,5 +1,5 @@
 FROM golang:1.10-alpine as build
-RUN apk update && apk upgrade && apk add git curl
+RUN apk update && apk upgrade && apk add git curl gcc musl-dev
 
 # Copy source
 WORKDIR /go/src/dockmon
