@@ -9,7 +9,7 @@ Pull the latest version of the docker image and run the service as follows:
 ```
 docker run -d \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -v serviceConf.yml:/root/serviceConf.yml
+    -v serviceConf.yml:/etc/dockmon/serviceConf.yml
     -e DOCKMON_USERNAME=foo \
     -e DOCKMON_PASSWORD=bar \
     czarsimon/dockmon:1.0 -storage memory
@@ -42,10 +42,10 @@ As seen above each service to monitor is specified with the following fields:
 - _restart:_ Specifies if a service should be restarted if it is marked as unhealthy.
 - _failAfter:_ Number of failed liveness probes required for the service to be marked as unhealthy.
 
-Another option to providing the serviceConf.yml specification to dockmon by volume mounting `-v serviceConf.yml:/root/serviceConf.yml`, is to build your on docker image with serviceConf included. This can be done with a Dockerfile similar to this:
+Another option to providing the serviceConf.yml specification to dockmon by volume mounting `-v serviceConf.yml:/etc/dockmon/serviceConf.yml`, is to build your on docker image with serviceConf included. This can be done with a Dockerfile similar to this:
 ```Dockerfile
 FROM czarsimon/dockmon:1.0
-COPY serviceConf.yml /root/serviceConf.yml
+COPY serviceConf.yml /etc/dockmon/serviceConf.yml
 ```
 ### Storage options #
 Dockmon has four options for storing the service health state as well as information such as number of restarts/liveness failures etc.

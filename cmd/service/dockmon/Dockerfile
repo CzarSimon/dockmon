@@ -15,6 +15,6 @@ RUN dep ensure
 RUN go build
 
 FROM alpine:3.6 as run
-WORKDIR /root/
+WORKDIR /etc/dockmon
 COPY --from=build /go/src/dockmon/dockmon dockmon
 ENTRYPOINT ["./dockmon"]
