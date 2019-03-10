@@ -17,4 +17,5 @@ RUN go build
 FROM alpine:3.6 as run
 WORKDIR /etc/dockmon
 COPY --from=build /go/src/dockmon/dockmon dockmon
+COPY resources resources
 ENTRYPOINT ["./dockmon"]

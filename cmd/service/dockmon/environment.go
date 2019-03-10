@@ -11,7 +11,6 @@ import (
 	docker "docker.io/go-docker"
 	"github.com/CzarSimon/dockmon/pkg/datastore"
 	"github.com/CzarSimon/dockmon/pkg/schema"
-	"github.com/gobuffalo/packr"
 	migrate "github.com/rubenv/sql-migrate"
 )
 
@@ -70,9 +69,10 @@ func newServiceRepository(config config) datastore.ServiceRepository {
 }
 
 func migrateDB(dbDriver string, db *sql.DB) error {
-	migrationSource := &migrate.PackrMigrationSource{
-		Box: packr.NewBox("./resources/migrations"),
-		Dir: dbDriver,
+	migrationsPath := fmt.Sprintf("./resources/migrations/%s", dbDriver)
+	log.Println("Migrations path", migrationsPath)
+	migrationSource := &migrate.FileMigrationSource{
+		Dir: migrationsPath,
 	}
 	migrate.SetTable("dockmon_migrations")
 
